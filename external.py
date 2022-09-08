@@ -22,11 +22,12 @@ params = {
 response = requests.get(url=url, headers=headers, params=params)
 json_obj = response.text
 result = json.loads(json_obj)
+
 for i in range(50):
     data = result["data"][i]
-    if data["iata_country_code"] == Country.objects.all().values_list("code"):
+    if data["iata_country_code"] in Country.objects.all().values_list("code", flat=True):
         Place.objects.create(name=data["name"], country=data["iata_country_code"],
-                             category='Airport', code=data["iata_code"], longitude=data["longitude"],
+                             category="Airport", code=data["iata_code"], longitude=data["longitude"],
                              latitude=data["latitude"])
     else:
         pass

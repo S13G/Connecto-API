@@ -11,6 +11,10 @@ class Country(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=4, null=True)
 
+    class Meta:
+        verbose_name = "Country"
+        verbose_name_plural = "Countries"
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 
@@ -25,7 +29,7 @@ class Place(models.Model):
     name = models.CharField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     category = models.CharField(choices=PLACES, max_length=255)
-    code = models.CharField(max_length=4)
+    code = models.CharField(max_length=10)
     longitude = models.CharField(max_length=255)
     latitude = models.CharField(max_length=255)
     display = models.BooleanField(default=True)

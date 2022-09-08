@@ -111,6 +111,7 @@ JAZZMIN_SETTINGS = {
 
 JAZZMIN_UI_TWEAKS = {
     "theme": "minty",
+    "body_small_text": True,
     # "dark_mode_theme": "darkly",
 }
 
