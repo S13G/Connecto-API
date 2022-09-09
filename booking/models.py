@@ -81,11 +81,11 @@ class Journey(models.Model):
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
     current_journey_price = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True)
+        max_digits=6, decimal_places=2, null=True, editable=False)
     old_journey_price = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True)
+        max_digits=6, decimal_places=2, null=True, editable=False)
     passengers = models.IntegerField(validators=[MinValueValidator(1)])
-    distance = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    distance = models.DecimalField(max_digits=6, decimal_places=2, null=True, editable=False)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
 
     def save(self, *args, **kwargs):
@@ -123,6 +123,36 @@ class Booker(models.Model):
         return f"{self.pronoun} {self.first_name} {self.last_name}"
 
 
+class EquipmentType(models.Model):
+    EQUIPMENT_CHOICE = [
+        ('CHILD_SEAT', 'Child Seat'),
+        ('INFANT_SEAT', 'Infant Seat'),
+        ('WHEELCHAIR', 'Wheelchair'),
+        ('BOOSTER_SEAT', 'Booster Seat'),
+        ('EXTRA_STOP_IN_TOWN', 'Extra Stop in Town'),
+        ('SKIS_AND_SNOWBOARD', 'Ski and Snowboard'),
+        ('BICYCLE', 'Bicycle'),
+    ]
+    name = models.CharField(choices=EQUIPMENT_CHOICE,
+                            max_length=255, default=None)
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    date_created = models.DateTimeField(null=True)
+    session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class Equipment(models.Model):
+    equipment = models.ManyToManyField(EquipmentType)
+    first_item_count = models.IntegerField(default=None)
+    return_item_count = models.IntegerField(default=None)
+    session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    def __str__(self):
+        return f"{self.equipment}"
+
+
 class Booking(models.Model):
     ROUTE = [
         ('With Return', 'With Return'),
@@ -134,9 +164,8 @@ class Booking(models.Model):
         max_length=255, choices=ROUTE, default='With Return')
     booker = models.ForeignKey(
         Booker, on_delete=models.CASCADE, related_name="customer", default=None)
-    place = models.ForeignKey(
-        Place, on_delete=models.CASCADE, default=None)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, null=True, blank=True)
     departure = models.DateField()
     returning = models.DateField()
     arrival_flight_number = models.CharField(
@@ -153,43 +182,3 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.airport}"
-
-
-class EquipmentType(models.Model):
-    CHILD_SEAT = 5.00
-    INFANT_SEAT = 5.00
-    WHEELCHAIR = 0
-    BOOSTER_SEAT = 5.00
-    EXTRA_STOP_IN_TOWN = 10.00
-    SKIS_AND_SNOWBOARD = 5.00
-    BICYCLE = 10.00
-
-    EQUIPMENT_CHOICE = [
-        (CHILD_SEAT, 'Child Seat'),
-        (INFANT_SEAT, 'Infant Seat'),
-        (WHEELCHAIR, 'Wheelchair'),
-        (BOOSTER_SEAT, 'Booster Seat'),
-        (EXTRA_STOP_IN_TOWN, 'Extra Stop in Town'),
-        (SKIS_AND_SNOWBOARD, 'Ski and Snowboard'),
-        (BICYCLE, 'Bicycle'),
-    ]
-    name = models.CharField(choices=EQUIPMENT_CHOICE,
-                            max_length=255, default=None)
-    quantity = models.IntegerField(null=True)
-    date_created = models.DateTimeField(null=True)
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
-
-    def __str__(self):
-        return f"{self.name}"
-
-
-class Equipment(models.Model):
-    equipment = models.ManyToManyField(EquipmentType)
-    first_item_count = models.IntegerField(default=None)
-    return_item_count = models.IntegerField(default=None)
-    booking = models.ForeignKey(
-        Booking, default=None, on_delete=models.CASCADE, related_name="extras")
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
-
-    def __str__(self):
-        return f"{self.equipment}"
