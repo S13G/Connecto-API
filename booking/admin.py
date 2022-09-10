@@ -1,7 +1,7 @@
 from django.contrib import admin
 # from django.contrib.gis.admin import OSMGeoAdmin
 
-from booking.models import Place, Booker, Booking, Journey, Equipment, Vehicle, EquipmentType, Country
+from booking.models import Place, Booker, Booking, Journey, EquipmentChoice, Vehicle, EquipmentType, Country
 
 # Register your models here.
 
@@ -52,9 +52,9 @@ class BookingInline(admin.StackedInline):
 @admin.register(Journey)
 class JourneyAdmin(admin.ModelAdmin):
     inlines = [BookingInline,]
-    list_display = ['from_place', 'to_place', 'distance', 'one_way_current_price', 'with_return_current_price']
+    list_display = ['from_place', 'to_place', 'distance', 'current_price', 'with_return_current_price']
     list_per_page = 30
-    readonly_fields = ['one_way_old_price', 'with_return_old_price', 'one_way_current_price', 'with_return_current_price', 'distance']
+    readonly_fields = ['old_price', 'current_price', 'distance']
 
 
-admin.site.register([Booking, Equipment, EquipmentType])
+admin.site.register([Booking, EquipmentChoice, EquipmentType])

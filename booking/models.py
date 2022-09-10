@@ -1,6 +1,7 @@
 from decimal import Decimal
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
 from shortuuidfield import ShortUUIDField
 
 import haversine as hs
@@ -75,7 +76,6 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.vehicle_make_and_model
 
-
 class EquipmentType(models.Model):
     EQUIPMENT_CHOICE = [
         ('CHILD SEAT', 'Child Seat'),
@@ -86,24 +86,22 @@ class EquipmentType(models.Model):
         ('SKIS AND SNOWBOARD', 'Ski and Snowboard'),
         ('BICYCLE', 'Bicycle'),
     ]
-    name = models.CharField(choices=EQUIPMENT_CHOICE,
-                            max_length=255, default=None)
-    price = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    date_created = models.DateTimeField(null=True)
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
+    name = models.CharField(max_length=255, choices=EQUIPMENT_CHOICE)
+    price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1)], null=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name}"
 
 
-class Equipment(models.Model):
-    equipment = models.ManyToManyField(EquipmentType)
-    first_item_count = models.IntegerField(default=None, null=True, blank=True)
-    return_item_count = models.IntegerField(default=None, null=True, blank=True)
+class EquipmentChoice(models.Model):
+    equipment = models.ForeignKey(EquipmentType, on_delete=models.CASCADE, null=True)
+    quantity = models.IntegerField(validators=[MaxValueValidator(5)])
+    date_created = models.DateTimeField(default=timezone.now)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
 
     def __str__(self):
-        return f"Total item count is {self.first_item_count + self.return_item_count}"
+        return f"{self.equipment}"
 
 
 class Journey(models.Model):
@@ -111,28 +109,32 @@ class Journey(models.Model):
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
-    one_way_current_price = models.DecimalField(
+    current_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
-    one_way_old_price = models.DecimalField(
-        max_digits=60, decimal_places=2, null=True)
-    with_return_current_price = models.DecimalField(
-        max_digits=60, decimal_places=2, null=True)
-    with_return_old_price = models.DecimalField(
+    old_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
     passengers = models.IntegerField(validators=[MinValueValidator(1)])
-    equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True, blank=True)
+    equipment = models.ManyToManyField(EquipmentChoice)
     distance = models.DecimalField(max_digits=20, decimal_places=2, null=True)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    @property
+    def with_return_current_price(self):
+        return float(self.current_price * 2)
+    
+    @property
+    def with_return_old_price(self):
+        return float(self.old_price * 2)
 
     def save(self, *args, **kwargs):
         location1 = (Decimal(self.from_place.latitude), Decimal(self.from_place.longitude))
         location2 = (Decimal(self.to_place.latitude), Decimal(self.to_place.longitude))
         journey_distance = Decimal(hs.haversine(location1, location2))
         self.distance = journey_distance
-        one_way_old_price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
-        one_way_new_price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
-        self.one_way_current_price = journey_distance * (one_way_new_price_per_km / 1000)
-        self.one_way_old_price = journey_distance * (one_way_old_price_per_km / 1000)
+        price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
+        price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
+        self.current_price = journey_distance * (price_per_km / 1000)
+        self.old_price = journey_distance * (price_per_km / 1000)
         return super(Journey, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -170,27 +172,21 @@ class Booking(models.Model):
     route = models.CharField(
         max_length=255, choices=ROUTE, default='With Return')
     booker = models.ForeignKey(
-        Booker, on_delete=models.CASCADE, related_name="customer", default=None)
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
+        Booker, on_delete=models.CASCADE, related_name="customer", null=True)
+    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True)
     departure = models.DateField()
     returning = models.DateField()
     arrival_flight_number = models.CharField(
         max_length=20, null=True, blank=True)
-    landing_time = models.TimeField(default=None)
-    drop_off = models.CharField(max_length=255, default=None)
+    landing_time = models.TimeField(null=True)
+    drop_off = models.CharField(max_length=255, null=True)
     return_date = models.DateField()
-    pickup_time = models.TimeField(default=None)
-    pickup_address = models.CharField(max_length=255, default=None)
+    pickup_time = models.TimeField(null=True)
+    pickup_address = models.CharField(max_length=255, null=True)
     departure_flight_number = models.CharField(
         max_length=20, null=True, blank=True)
-    departure_flight_time = models.TimeField(default=None)
+    departure_flight_time = models.TimeField(null=True)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
-
-    def save(self, *args, **kwargs):
-        if self.route == 'With Return':
-            self.journey.with_return_old_price = self.journey.one_way_old_price * 2
-            self.journey.with_return_current_price = self.journey.one_way_current_price * 2
-        return super(Booking, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.booker} - {self.journey}"
