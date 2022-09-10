@@ -184,8 +184,8 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         if self.route == 'With Return':
-            self.journey.old_journey_price * 2
-            self.journey.current_journey_price * 2
+            self.journey.old_journey_price *= 2
+            self.journey.current_journey_price *= 2
         return super(Booking, self).save(*args, **kwargs)
 
     def __str__(self):
