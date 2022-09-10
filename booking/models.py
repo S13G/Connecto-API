@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
 from shortuuidfield import ShortUUIDField
@@ -75,27 +76,59 @@ class Vehicle(models.Model):
         return self.vehicle_make_and_model
 
 
+class EquipmentType(models.Model):
+    EQUIPMENT_CHOICE = [
+        ('CHILD SEAT', 'Child Seat'),
+        ('INFANT SEAT', 'Infant Seat'),
+        ('WHEELCHAIR', 'Wheelchair'),
+        ('BOOSTER SEAT', 'Booster Seat'),
+        ('EXTRA STOP IN TOWN', 'Extra Stop in Town'),
+        ('SKIS AND SNOWBOARD', 'Ski and Snowboard'),
+        ('BICYCLE', 'Bicycle'),
+    ]
+    name = models.CharField(choices=EQUIPMENT_CHOICE,
+                            max_length=255, default=None)
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    date_created = models.DateTimeField(null=True)
+    session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class Equipment(models.Model):
+    equipment = models.ManyToManyField(EquipmentType)
+    first_item_count = models.IntegerField(default=None, null=True, blank=True)
+    return_item_count = models.IntegerField(default=None, null=True, blank=True)
+    session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    def __str__(self):
+        return f"Total item count is {self.first_item_count + self.return_item_count}"
+
+
 class Journey(models.Model):
     from_place = models.ForeignKey(
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
     current_journey_price = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True, editable=False)
+        max_digits=60, decimal_places=2, null=True)
     old_journey_price = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True, editable=False)
+        max_digits=60, decimal_places=2, null=True)
     passengers = models.IntegerField(validators=[MinValueValidator(1)])
-    distance = models.DecimalField(max_digits=6, decimal_places=2, null=True, editable=False)
+    equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True, blank=True)
+    distance = models.DecimalField(max_digits=20, decimal_places=2, null=True)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
 
     def save(self, *args, **kwargs):
-        location1 = (self.from_place.latitude, self.from_place.longitude)
-        location2 = (self.to_place.latitude, self.to_place.longitude)
-        journey_distance = hs.haversine(location1, location2)
+        location1 = (Decimal(self.from_place.latitude), Decimal(self.from_place.longitude))
+        location2 = (Decimal(self.to_place.latitude), Decimal(self.to_place.longitude))
+        journey_distance = Decimal(hs.haversine(location1, location2))
         self.distance = journey_distance
-        price_per_km = self.vehicle.current_price
-        self.current_journey_price = journey_distance * price_per_km
-        self.old_journey_price = journey_distance * self.vehicle.old_price
+        old_price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
+        new_price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
+        self.current_journey_price = journey_distance * (new_price_per_km / 1000)
+        self.old_journey_price = journey_distance * (old_price_per_km / 1000)
         return super(Journey, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -123,36 +156,6 @@ class Booker(models.Model):
         return f"{self.pronoun} {self.first_name} {self.last_name}"
 
 
-class EquipmentType(models.Model):
-    EQUIPMENT_CHOICE = [
-        ('CHILD_SEAT', 'Child Seat'),
-        ('INFANT_SEAT', 'Infant Seat'),
-        ('WHEELCHAIR', 'Wheelchair'),
-        ('BOOSTER_SEAT', 'Booster Seat'),
-        ('EXTRA_STOP_IN_TOWN', 'Extra Stop in Town'),
-        ('SKIS_AND_SNOWBOARD', 'Ski and Snowboard'),
-        ('BICYCLE', 'Bicycle'),
-    ]
-    name = models.CharField(choices=EQUIPMENT_CHOICE,
-                            max_length=255, default=None)
-    price = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    date_created = models.DateTimeField(null=True)
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
-
-    def __str__(self):
-        return f"{self.name}"
-
-
-class Equipment(models.Model):
-    equipment = models.ManyToManyField(EquipmentType)
-    first_item_count = models.IntegerField(default=None)
-    return_item_count = models.IntegerField(default=None)
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
-
-    def __str__(self):
-        return f"{self.equipment}"
-
-
 class Booking(models.Model):
     ROUTE = [
         ('With Return', 'With Return'),
@@ -165,7 +168,6 @@ class Booking(models.Model):
     booker = models.ForeignKey(
         Booker, on_delete=models.CASCADE, related_name="customer", default=None)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, null=True, blank=True)
     departure = models.DateField()
     returning = models.DateField()
     arrival_flight_number = models.CharField(
@@ -180,5 +182,11 @@ class Booking(models.Model):
     departure_flight_time = models.TimeField(default=None)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
 
+    def save(self, *args, **kwargs):
+        if self.route == 'With Return':
+            self.journey.old_journey_price * 2
+            self.journey.current_journey_price * 2
+        return super(Booking, self).save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.airport}"
+        return f"{self.booker} - {self.journey}"
