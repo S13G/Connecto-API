@@ -111,9 +111,13 @@ class Journey(models.Model):
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
-    current_journey_price = models.DecimalField(
+    one_way_current_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
-    old_journey_price = models.DecimalField(
+    one_way_old_price = models.DecimalField(
+        max_digits=60, decimal_places=2, null=True)
+    with_return_current_price = models.DecimalField(
+        max_digits=60, decimal_places=2, null=True)
+    with_return_old_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
     passengers = models.IntegerField(validators=[MinValueValidator(1)])
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True, blank=True)
@@ -125,10 +129,10 @@ class Journey(models.Model):
         location2 = (Decimal(self.to_place.latitude), Decimal(self.to_place.longitude))
         journey_distance = Decimal(hs.haversine(location1, location2))
         self.distance = journey_distance
-        old_price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
-        new_price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
-        self.current_journey_price = journey_distance * (new_price_per_km / 1000)
-        self.old_journey_price = journey_distance * (old_price_per_km / 1000)
+        one_way_old_price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
+        one_way_new_price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
+        self.one_way_current_price = journey_distance * (one_way_new_price_per_km / 1000)
+        self.one_way_old_price = journey_distance * (one_way_old_price_per_km / 1000)
         return super(Journey, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -157,10 +161,10 @@ class Booker(models.Model):
 
 
 class Booking(models.Model):
-    ROUTE = [
+    ROUTE = (
         ('With Return', 'With Return'),
         ('One Way', 'One Way'),
-    ]
+    )
     reference_ID = ShortUUIDField(
         max_length=5, unique=True, editable=False)
     route = models.CharField(
@@ -184,8 +188,8 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         if self.route == 'With Return':
-            self.journey.old_journey_price *= 2
-            self.journey.current_journey_price *= 2
+            self.journey.with_return_old_price = self.journey.one_way_old_price * 2
+            self.journey.with_return_current_price = self.journey.one_way_current_price * 2
         return super(Booking, self).save(*args, **kwargs)
 
     def __str__(self):

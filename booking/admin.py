@@ -27,6 +27,7 @@ class CountryAdmin(admin.ModelAdmin):
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ['vehicle_make_and_model', 'category', 'current_price', 'old_price']
+    list_editable = ['current_price', 'old_price']
     list_per_page = 30
     ordering = ['vehicle_make_and_model']
 
@@ -51,9 +52,9 @@ class BookingInline(admin.StackedInline):
 @admin.register(Journey)
 class JourneyAdmin(admin.ModelAdmin):
     inlines = [BookingInline,]
-    list_display = ['from_place', 'to_place', 'distance', 'current_journey_price']
+    list_display = ['from_place', 'to_place', 'distance', 'one_way_current_price', 'with_return_current_price']
     list_per_page = 30
-    readonly_fields = ['current_journey_price', 'old_journey_price', 'distance']
+    readonly_fields = ['one_way_old_price', 'with_return_old_price', 'one_way_current_price', 'with_return_current_price', 'distance']
 
 
 admin.site.register([Booking, Equipment, EquipmentType])
