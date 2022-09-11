@@ -97,8 +97,13 @@ class EquipmentType(models.Model):
 class EquipmentChoice(models.Model):
     equipment = models.ForeignKey(EquipmentType, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(validators=[MaxValueValidator(5)])
+    price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1)], null=True)
     date_created = models.DateTimeField(default=timezone.now)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
+
+    def save(self, *args, **kwargs):
+        self.price = self.equipment.price * self.quantity
+        return super(EquipmentChoice, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.equipment}"
@@ -109,12 +114,12 @@ class Journey(models.Model):
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
+    equipment_choice = models.ManyToManyField(EquipmentChoice)
     current_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
     old_price = models.DecimalField(
         max_digits=60, decimal_places=2, null=True)
     passengers = models.IntegerField(validators=[MinValueValidator(1)])
-    equipment = models.ManyToManyField(EquipmentChoice)
     distance = models.DecimalField(max_digits=20, decimal_places=2, null=True)
     session_key = models.CharField(max_length=10000, null=True, editable=False)
 
@@ -127,14 +132,16 @@ class Journey(models.Model):
         return float(self.old_price * 2)
 
     def save(self, *args, **kwargs):
+        super(Journey, self).save(*args, **kwargs)
         location1 = (Decimal(self.from_place.latitude), Decimal(self.from_place.longitude))
         location2 = (Decimal(self.to_place.latitude), Decimal(self.to_place.longitude))
         journey_distance = Decimal(hs.haversine(location1, location2))
         self.distance = journey_distance
-        price_per_km = (self.vehicle.old_price * self.passengers) + (self.equipment.first_item_count + self.equipment.return_item_count)
-        price_per_km = self.vehicle.current_price * self.passengers + (self.equipment.first_item_count + self.equipment.return_item_count)
-        self.current_price = journey_distance * (price_per_km / 1000)
-        self.old_price = journey_distance * (price_per_km / 1000)
+        old_price_per_km = self.vehicle.old_price * self.passengers
+        price_per_km = self.vehicle.current_price * self.passengers
+        equipment_sum = [equipment for equipment in self.equipment_choice.all().values_list("price", flat=True)]
+        self.current_price = journey_distance * (price_per_km / 1000) + sum(equipment_sum)
+        self.old_price = journey_distance * (old_price_per_km / 1000) + sum(equipment_sum)
         return super(Journey, self).save(*args, **kwargs)
 
     def __str__(self):

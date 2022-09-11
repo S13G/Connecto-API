@@ -102,9 +102,9 @@ JAZZMIN_SETTINGS = {
     "site_header": "Connecto",
     "site_brand": "Connecto",
     "copyright": "Connecto Transfers Ltd",
-    # "site_logo": "books/img/icon.png",
-    # "site_icon": "books/img/favicon.png",
-    # "login_icon": "books/img/favicon.png",
+    "site_logo": "books/img/connecto.png",
+    "site_icon": "books/img/connecto.png",
+    "login_icon": "books/img/connecto.png",
     "welcome_sign": "Welcome to Connecto",
     "show_ui_builder": False,
 }

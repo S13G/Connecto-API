@@ -44,6 +44,12 @@ class BookerAdmin(admin.ModelAdmin):
         return ("%s %s %s" % (obj.pronoun, obj.first_name, obj.last_name))
 
 
+@admin.register(EquipmentChoice)
+class EquipmentChoiceAdmin(admin.ModelAdmin):
+    list_display = ['equipment', 'quantity', 'price']
+    readonly_fields = ['price']
+
+
 class BookingInline(admin.StackedInline):
     model = Booking
     max_num = 1
@@ -57,4 +63,4 @@ class JourneyAdmin(admin.ModelAdmin):
     readonly_fields = ['old_price', 'current_price', 'distance']
 
 
-admin.site.register([Booking, EquipmentChoice, EquipmentType])
+admin.site.register([Booking, EquipmentType])
