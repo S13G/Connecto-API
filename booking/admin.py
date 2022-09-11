@@ -57,10 +57,16 @@ class BookingInline(admin.StackedInline):
 
 @admin.register(Journey)
 class JourneyAdmin(admin.ModelAdmin):
-    inlines = [BookingInline,]
+    inlines = [BookingInline]
     list_display = ['from_place', 'to_place', 'distance', 'current_price', 'with_return_current_price']
     list_per_page = 30
     readonly_fields = ['old_price', 'current_price', 'distance']
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        equipment_sum = [equipment for equipment in form.instance.equipment_choice.all().values_list("price", flat=True)]
+        form.instance.current_price += sum(equipment_sum)
+        form.instance.old_price += sum(equipment_sum) 
 
 
 admin.site.register([Booking, EquipmentType])
