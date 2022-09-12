@@ -132,17 +132,17 @@ class Journey(models.Model):
         return float(self.old_price * 2)
 
     def save(self, *args, **kwargs):
-        # super(Journey, self).save(*args, **kwargs)
+        super(Journey, self).save(*args, **kwargs)
         location1 = (Decimal(self.from_place.latitude), Decimal(self.from_place.longitude))
         location2 = (Decimal(self.to_place.latitude), Decimal(self.to_place.longitude))
         journey_distance = Decimal(hs.haversine(location1, location2))
         self.distance = journey_distance
         old_price_per_km = self.vehicle.old_price * self.passengers
         price_per_km = self.vehicle.current_price * self.passengers
-        # equipment_sum = [equipment for equipment in self.equipment_choice.all().values_list("price", flat=True)]
-        self.current_price = journey_distance * (price_per_km / 1000)
-        self.old_price = journey_distance * (old_price_per_km / 1000)
-        super(Journey, self).save(*args, **kwargs)
+        equipment_sum = [equipment for equipment in self.equipment_choice.all().values_list("price", flat=True)]
+        self.current_price = journey_distance * (price_per_km / 1000) + sum(equipment_sum)
+        self.old_price = journey_distance * (old_price_per_km / 1000) + sum(equipment_sum)
+        return super(Journey, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"From {self.from_place} to {self.to_place}"
