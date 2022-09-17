@@ -1,3 +1,4 @@
+from wsgiref import validate
 from rest_framework import serializers
 
 from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Place, Vehicle
@@ -13,18 +14,18 @@ class BookVehicleSerializer(serializers.ModelSerializer):
     to_place = serializers.SlugRelatedField(slug_field='name', queryset=Place.objects.all(), error_messages={'does_not_exist': 'Place does not exist!'})
     vehicle = serializers.SlugRelatedField(slug_field='vehicle_make_and_model', queryset=Vehicle.objects.all(), error_messages={'does_not_exist': 'Invalid Vehicle!'})
     country = serializers.SlugRelatedField(slug_field='name', queryset=Country.objects.all(), error_messages={'does_not_exist': 'Country does not exist!'})
-    equipments = EquipmentChoiceSerializer(many=True)
+    equipment_choices = EquipmentChoiceSerializer(many=True)
 
     class Meta:
         model = Booking
-        exclude = ['timestamp', 'id', 'equipment_choices']
+        exclude = ['timestamp', 'id']
 
     def create(self, validated_data):
+        equipment_choices_data = validated_data.pop('equipment_choices')
         booking = Booking.objects.create(**validated_data)
-        equipment_choices_data = validated_data.pop('equipments')
         equipment_choices = [EquipmentChoice(**eqp_data) for eqp_data in equipment_choices_data]
-        eq_choices = EquipmentChoice.objects.bulk_create(equipment_choices)
-        for e in eq_choices:
-            booking.equipment_choices.add(e)
+        choices = EquipmentChoice.objects.bulk_create(equipment_choices)
+        for c in choices:
+            booking.equipment_choices.add(c)
         booking.save()
         return booking

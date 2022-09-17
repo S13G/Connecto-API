@@ -1,11 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
+# from rest_framework.pagination import PageNumberPagination
 
 from booking.models import Booking, Country, EquipmentType, Place, Vehicle
 from booking.serializers import BookVehicleSerializer
 
-class PlaceView(APIView):
+class PlaceView(APIView):   
    def get(self, request):
       places = Place.objects.select_related('country')
       data = []

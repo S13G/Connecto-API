@@ -63,6 +63,11 @@ INTERNAL_IPS = [
     # ...
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 40,
+}
+
 ROOT_URLCONF = 'connecto.urls'
 
 TEMPLATES = [
@@ -89,11 +94,8 @@ WSGI_APPLICATION = 'connecto.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'connecto',
-        'HOST': 'localhost',
-        'USER': 'root',
-        'PASSWORD': 'Root123#',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3'
     }
 }
 
