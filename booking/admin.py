@@ -1,7 +1,7 @@
+from decimal import Decimal
 from django.contrib import admin
-# from django.contrib.gis.admin import OSMGeoAdmin
 
-from booking.models import Place, Booker, Booking, Journey, EquipmentChoice, Vehicle, EquipmentType, Country
+from booking.models import Place, Booking, EquipmentChoice, Vehicle, EquipmentType, Country
 
 # Register your models here.
 
@@ -31,42 +31,17 @@ class VehicleAdmin(admin.ModelAdmin):
     list_per_page = 30
     ordering = ['vehicle_make_and_model']
 
-
-@admin.register(Booker)
-class BookerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'country']
-    list_per_page = 30
-    list_select_related = ['country']
-    ordering = ['first_name']
-
-    @admin.display(description='Full name')
-    def name(self, obj):
-        return ("%s %s %s" % (obj.pronoun, obj.first_name, obj.last_name))
-
-
 @admin.register(EquipmentChoice)
 class EquipmentChoiceAdmin(admin.ModelAdmin):
-    list_display = ['equipment', 'quantity', 'price']
-    readonly_fields = ['price']
+    list_display = ['equipment', 'quantity', 'total_price']
 
 
-class BookingInline(admin.StackedInline):
-    model = Booking
-    max_num = 1
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ['full_name', 'from_place', 'to_place', 'journey_distance', 'total_current_price', 'with_return_current_price']
 
+    @admin.display(description='Full name')
+    def full_name(self, obj):
+        return f"{obj.pronoun} {obj.first_name} {obj.last_name}"
 
-@admin.register(Journey)
-class JourneyAdmin(admin.ModelAdmin):
-    inlines = [BookingInline]
-    list_display = ['from_place', 'to_place', 'distance', 'current_price', 'with_return_current_price']
-    list_per_page = 30
-    readonly_fields = ['old_price', 'current_price', 'distance']
-
-    def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
-        equipment_sum = [equipment for equipment in form.instance.equipment_choice.all().values_list("price", flat=True)]
-        form.instance.current_price += sum(equipment_sum)
-        form.instance.old_price += sum(equipment_sum) 
-
-
-admin.site.register([Booking, EquipmentType])
+admin.site.register(EquipmentType)
+admin.site.register(Booking, BookingAdmin)

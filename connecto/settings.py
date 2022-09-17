@@ -93,7 +93,7 @@ DATABASES = {
         'NAME': 'connecto',
         'HOST': 'localhost',
         'USER': 'root',
-        'PASSWORD': 'S13gd0ma1n#',
+        'PASSWORD': 'Root123#',
     }
 }
 
