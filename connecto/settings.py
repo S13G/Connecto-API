@@ -152,6 +152,11 @@ USE_I18N = True
 
 USE_TZ = True
 
+# STRIPE CONFIG
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
+STRIPE_ENDPOINT_SECRET = config('STRIPE_ENDPOINT_SECRET')
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

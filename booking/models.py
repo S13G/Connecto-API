@@ -161,15 +161,6 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} = {self.from_place} to {self.to_place}"
 
-    # def save(self, *args, **kwargs) -> None:
-    #     while not self.session_key:
-    #         unique_code = str(uuid.uuid4()).replace("-", "")[:200]
-    #         session_key = str(unique_code)
-    #         similar_obj_sess_key = Booking.objects.filter(session_key=session_key)
-    #         if not similar_obj_sess_key:
-    #             self.session_key = session_key                
-    #     super().save(*args, **kwargs)
-
     @property
     def journey_distance(self):
         location1 = (Decimal(self.from_place.latitude), Decimal(self.from_place.longitude))
@@ -181,18 +172,33 @@ class Booking(models.Model):
         print(self.passengers)
         equipment_sum = sum([equipment.total_price for equipment in self.equipment_choices.all()])
         price_per_km = self.vehicle.current_price * self.passengers
-        return round(self.journey_distance * (price_per_km / 1000) + equipment_sum, 2)
+        total_price = self.journey_distance * (price_per_km / 1000) + equipment_sum
+        if self.route == "With Return":
+            total_price = total_price * 2 
+        return round(total_price, 2)
 
     @property
     def total_old_price(self):
         equipment_sum = sum([equipment.total_price for equipment in self.equipment_choices.all()])
         old_price_per_km = self.vehicle.old_price * self.passengers
-        return round(self.journey_distance * (old_price_per_km / 1000) + equipment_sum, 2)
+        total_price = self.journey_distance * (old_price_per_km / 1000) + equipment_sum
+        if self.route == "With Return":
+            total_price = total_price * 2 
+        return round(total_price, 2)
 
-    @property
-    def with_return_current_price(self):
-        return round(self.total_current_price * 2, 2)
-    
-    @property
-    def with_return_old_price(self):
-        return round(self.total_old_price * 2, 2)
+class Payment(models.Model):
+    transaction_id = models.CharField(max_length=200, null=True, unique=True)
+    stripe_token = models.CharField(max_length=1000, null=True, unique=True)
+    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True)
+    verified = models.BooleanField(default=False, null=True, blank=False)
+    session_key = models.CharField(max_length=300, null=True, blank=True, unique=True)
+    date_paid = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs) -> None:
+        while not self.transaction_id:
+            unique_code = str(uuid.uuid4()).replace("-", "")[:100]
+            transaction_id = str(unique_code)
+            similar_obj_trans_id = Payment.objects.filter(transaction_id=transaction_id)
+            if not similar_obj_trans_id:
+                self.transaction_id = transaction_id                
+        super().save(*args, **kwargs)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Place, Vehicle
+from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Payment, Place, Vehicle
 
 class EquipmentChoiceSerializer(serializers.ModelSerializer):
     equipment = serializers.SlugRelatedField(slug_field='name', queryset=EquipmentType.objects.all(), error_messages={'does_not_exist': 'Invalid Equipment!'})
@@ -45,6 +45,14 @@ class BookVehicleSerializer(serializers.ModelSerializer):
             instance.equipment_choices.add(c)
         instance.save()
         return super().update(instance=instance, validated_data=validated_data)
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        
+
+
+
 
 # {
 #   "from_place": "Aalborg Airport",

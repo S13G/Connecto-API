@@ -37,7 +37,7 @@ class EquipmentChoiceAdmin(admin.ModelAdmin):
 
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'from_place', 'to_place', 'session_key', 'total_current_price', 'with_return_current_price']
+    list_display = ['full_name', 'from_place', 'to_place', 'session_key', 'total_current_price']
     readonly_fields = ['session_key']
     list_filter = ('session_key', 'first_name', 'last_name')
 
@@ -51,6 +51,9 @@ class BookingAdmin(admin.ModelAdmin):
     @admin.display(description='Full name')
     def full_name(self, obj):
         return f"{obj.pronoun} {obj.first_name} {obj.last_name}"
+    
+    def has_add_permission(self, request):
+        return False
 
 admin.site.register(EquipmentType)
 admin.site.register(Booking, BookingAdmin)
