@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 # from rest_framework.pagination import PageNumberPagination
 
 from booking.models import Booking, Country, EquipmentType, Place, Vehicle
@@ -32,3 +32,10 @@ class EquipmentTypeView(APIView):
 class BookVehicleView(CreateAPIView):
    serializer_class = BookVehicleSerializer
    queryset = Booking.objects.all()
+
+class BookingUpdateView(RetrieveUpdateAPIView):
+   serializer_class = BookVehicleSerializer
+   queryset = Booking.objects.all()
+   lookup_field = "session_key"
+   lookup_url_kwarg = "sess_key"
+

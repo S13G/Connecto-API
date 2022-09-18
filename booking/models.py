@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 
 import haversine as hs
+import uuid
+
 
 # Create your models here.
 
@@ -132,7 +134,7 @@ class Booking(models.Model):
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
-    passengers = models.IntegerField(validators=[MinValueValidator(1)], null=True)
+    passengers = models.IntegerField(default="1", validators=[MinValueValidator(1)], null=True)
     #--------------------------------------
     
     # equipment choice
@@ -152,12 +154,21 @@ class Booking(models.Model):
     departure_flight_number = models.CharField(
         max_length=20, null=True, blank=True)
     departure_flight_time = models.TimeField(null=True)
-    session_key = models.CharField(max_length=10000, null=True, editable=False)
+    session_key = models.CharField(max_length=100, null=True, unique=True)
 
-    timestamp = models.DateTimeField(default=timezone.now)
+    date_filled = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} = {self.from_place} to {self.to_place}"
+
+    # def save(self, *args, **kwargs) -> None:
+    #     while not self.session_key:
+    #         unique_code = str(uuid.uuid4()).replace("-", "")[:200]
+    #         session_key = str(unique_code)
+    #         similar_obj_sess_key = Booking.objects.filter(session_key=session_key)
+    #         if not similar_obj_sess_key:
+    #             self.session_key = session_key                
+    #     super().save(*args, **kwargs)
 
     @property
     def journey_distance(self):
@@ -167,6 +178,7 @@ class Booking(models.Model):
 
     @property
     def total_current_price(self):
+        print(self.passengers)
         equipment_sum = sum([equipment.total_price for equipment in self.equipment_choices.all()])
         price_per_km = self.vehicle.current_price * self.passengers
         return round(self.journey_distance * (price_per_km / 1000) + equipment_sum, 2)
