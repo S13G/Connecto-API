@@ -42,12 +42,38 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'corsheaders',
     'debug_toolbar',
     'booking.apps.BookingConfig',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+]
+
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'accept-encoding',
+    'x-csrftoken',
+    'access-control-allow-origin',
+    'content-disposition'
+)
+CORS_ALLOW_CREDENTIALS = False
+
+CORS_ALLOW_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
@@ -55,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'booking.middleware.AuthorizedOriginMiddleware'
 ]
 
 INTERNAL_IPS = [

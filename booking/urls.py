@@ -10,3 +10,4 @@ urlpatterns = [
     path('check-update-booking/', BookingUpdateView.as_view()),
     path('checkout/', MakePaymentView.as_view()),
 ]
+

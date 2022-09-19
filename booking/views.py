@@ -3,8 +3,6 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
-# from rest_framework.pagination import PageNumberPagination
-
 from booking.models import Booking, Country, EquipmentType, Place, Vehicle, Payment
 from booking.serializers import BookVehicleSerializer
 import stripe
@@ -57,13 +55,13 @@ class MakePaymentView(APIView):
 
          try:
             charge = stripe.Charge.create(
-                  amount=data.get('amount'),
-                  currency='USD',
-                  source=token,
-                  description='Charge from Connecto',
-                  statement_descriptor="22 Characters max",
-                  metadata={'order_id': payment.transaction_id},
-                  receipt_email=booking.email_address
+               amount=booking.total_current_price,
+               currency='USD',
+               source=token,
+               description='Charge from Connecto',
+               statement_descriptor="22 Characters max",
+               metadata={'order_id': payment.transaction_id},
+               receipt_email=booking.email_address
             )
 
             # Only confirm an order after you have status: succeeded
@@ -102,3 +100,7 @@ class MakePaymentView(APIView):
             return Response('Unable to process payment, try again later.', status=500)
       else:
          return Response('Token cannot be null', status=400)
+
+# {
+#    "stripe_token": "GENERATED_STRIPE_TOKEN"
+# }
