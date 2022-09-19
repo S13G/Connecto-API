@@ -38,11 +38,11 @@ class BookVehicleView(CreateAPIView):
 
 class BookingUpdateView(RetrieveUpdateAPIView):
    serializer_class = BookVehicleSerializer
-   queryset = Booking.objects.all()
-   lookup_field = "session_key"
-   lookup_url_kwarg = "sess_key"
-      
-class PaymentView(APIView):
+
+   def get_object(self, request):
+      return Booking.objects.get(session_key=request.session.session_key)
+
+class MakePaymentView(APIView):
    def post(self, request):
       data = request.data
       booking = Booking.objects.filter(session_key = request.session.session_key)
@@ -62,7 +62,8 @@ class PaymentView(APIView):
                   source=token,
                   description='Charge from Connecto',
                   statement_descriptor="22 Characters max",
-                  metadata={'order_id': payment.transaction_id}
+                  metadata={'order_id': payment.transaction_id},
+                  receipt_email=booking.email_address
             )
 
             # Only confirm an order after you have status: succeeded

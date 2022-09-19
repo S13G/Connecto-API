@@ -46,14 +46,6 @@ class BookVehicleSerializer(serializers.ModelSerializer):
         instance.save()
         return super().update(instance=instance, validated_data=validated_data)
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        
-
-
-
-
 # {
 #   "from_place": "Aalborg Airport",
 #   "to_place": "A Coruña Airport",
