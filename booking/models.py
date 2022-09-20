@@ -154,9 +154,13 @@ class Booking(models.Model):
     departure_flight_number = models.CharField(
         max_length=20, null=True, blank=True)
     departure_flight_time = models.TimeField(null=True)
-    session_key = models.CharField(max_length=100, null=True, unique=True)
 
     date_filled = models.DateTimeField(default=timezone.now)
+
+    # Payment Details
+    transaction_id = models.CharField(max_length=200, null=True, unique=True)
+    stripe_token = models.CharField(max_length=255, null=True, unique=True)
+    verified = models.BooleanField(default=False, null=True, blank=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} = {self.from_place} to {self.to_place}"
@@ -169,7 +173,6 @@ class Booking(models.Model):
 
     @property
     def total_current_price(self):
-        print(self.passengers)
         equipment_sum = sum([equipment.total_price for equipment in self.equipment_choices.all()])
         price_per_km = self.vehicle.current_price * self.passengers
         total_price = self.journey_distance * (price_per_km / 1000) + equipment_sum
@@ -186,19 +189,11 @@ class Booking(models.Model):
             total_price = total_price * 2 
         return round(total_price, 2)
 
-class Payment(models.Model):
-    transaction_id = models.CharField(max_length=200, null=True, unique=True)
-    stripe_token = models.CharField(max_length=1000, null=True, unique=True)
-    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True)
-    verified = models.BooleanField(default=False, null=True, blank=False)
-    session_key = models.CharField(max_length=300, null=True, blank=True, unique=True)
-    date_paid = models.DateTimeField(default=timezone.now)
-
     def save(self, *args, **kwargs) -> None:
         while not self.transaction_id:
             unique_code = str(uuid.uuid4()).replace("-", "")[:100]
             transaction_id = str(unique_code)
-            similar_obj_trans_id = Payment.objects.filter(transaction_id=transaction_id)
+            similar_obj_trans_id = Booking.objects.filter(transaction_id=transaction_id)
             if not similar_obj_trans_id:
                 self.transaction_id = transaction_id                
         super().save(*args, **kwargs)

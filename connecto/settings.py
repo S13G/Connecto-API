@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'debug_toolbar',
     'booking.apps.BookingConfig',
+    'background_task',
+    'anymail',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -81,7 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'booking.middleware.AuthorizedOriginMiddleware'
+    # 'booking.middleware.AuthorizedOriginMiddleware'
 ]
 
 INTERNAL_IPS = [
@@ -100,7 +102,7 @@ ROOT_URLCONF = 'connecto.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,10 +123,15 @@ WSGI_APPLICATION = 'connecto.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3'
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'connecto',
+        'HOST': 'localhost',
+        'USER': 's13g',
+        'PASSWORD': 's13g123#',
     }
 }
+
+SILENCED_SYSTEM_CHECKS = ['mysql.E001']
 
 JAZZMIN_SETTINGS = {
     "site_title": "Connecto Admin",
@@ -184,6 +191,16 @@ STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
 STRIPE_ENDPOINT_SECRET = config('STRIPE_ENDPOINT_SECRET')
 
+BACKGROUND_TASK_RUN_ASYNC = True
+
+EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+
+ANYMAIL = {
+    "MAILJET_API_KEY": config('MAILJET_API_KEY'),
+    "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
+}
+
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

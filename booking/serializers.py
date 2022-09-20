@@ -1,6 +1,11 @@
 from rest_framework import serializers
+from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Place, Vehicle
+from django.conf import settings
+from booking.emails import Util
+from . tasks import transport_reminder
+from datetime import datetime, timedelta, timezone
 
-from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Payment, Place, Vehicle
+import stripe
 
 class EquipmentChoiceSerializer(serializers.ModelSerializer):
     equipment = serializers.SlugRelatedField(slug_field='name', queryset=EquipmentType.objects.all(), error_messages={'does_not_exist': 'Invalid Equipment!'})
@@ -17,34 +22,87 @@ class BookVehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        exclude = ['timestamp', 'id']
-        read_only_fields = ('session_key', )
+        exclude = ['date_filled', 'id', 'verified']
+        read_only_fields = ('transaction_id', )
+
+    def get_fields(self, *args, **kwargs):
+        fields = super(BookVehicleSerializer, self).get_fields(*args, **kwargs)
+        for f in fields.values():
+            f.required = True
+        return fields
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        request.session.flush()
-        request.session.save()
-        session_key = request.session.session_key
-        print(session_key)
-        equipment_choices_data = validated_data.pop('equipment_choices')
+        if None in validated_data.values():
+            raise serializers.ValidationError('Fields are not properly filled')
 
-        booking = Booking.objects.create(session_key = session_key, **validated_data)
+        equipment_choices_data = validated_data.pop('equipment_choices')
+        token = validated_data.pop('stripe_token', None)
+        booking = Booking.objects.create(**validated_data)
         equipment_choices = [EquipmentChoice(**eqp_data) for eqp_data in equipment_choices_data]
         choices = EquipmentChoice.objects.bulk_create(equipment_choices)
         for c in choices:
             booking.equipment_choices.add(c)
-        booking.save()
-        return booking
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            
+            charge = stripe.Charge.create(
+                amount=booking.total_current_price,
+                currency='USD',
+                source=token,
+                description='Charge from Connecto',
+                statement_descriptor="22 Characters max",
+                metadata={'order_id': booking.transaction_id},
+                receipt_email=booking.email_address
+            )
 
-    def update(self, instance, validated_data):
-        instance.equipment_choices.all().delete()
-        equipment_choices_data = validated_data.pop('equipment_choices')
-        equipment_choices = [EquipmentChoice(**eqp_data) for eqp_data in equipment_choices_data]
-        choices = EquipmentChoice.objects.bulk_create(equipment_choices)
-        for c in choices:
-            instance.equipment_choices.add(c)
-        instance.save()
-        return super().update(instance=instance, validated_data=validated_data)
+            # Only confirm an order after you have status: succeeded
+            if charge['status'] == 'succeeded':
+                booking.verified = True
+                booking.save()
+                Util.success_booking_email(booking)
+                if (booking.departure - datetime.now(timezone.utc)).total_seconds() >= 634800:
+                    transport_reminder(booking.id, schedule=booking.departure - timedelta(days=7))
+                return booking
+            else:
+                raise stripe.error.CardError
+        except stripe.error.CardError as e:
+            body = e.json_body
+            err = body.get('error', {})
+            err = serializers.ValidationError(f"{err.get('message')}")
+            err.status_code = 400
+            raise err
+        except stripe.error.RateLimitError as e:
+            # Too many requests made to the API too quickly
+            err = serializers.ValidationError("The API was not able to respond, try again.")
+            err.status_code = 429
+            raise err
+        except stripe.error.InvalidRequestError as e:
+            # invalid parameters were supplied to Stripe's API
+            err = serializers.ValidationError("Invalid parameters, unable to process payment.")
+            err.status_code = 400
+            raise err
+        except stripe.error.AuthenticationError as e:
+            # Authentication with Stripe's API failed
+            # (maybe you changed API keys recently)
+            err = serializers.ValidationError("Authentication Failed. Try again")
+            err.status_code = 403
+            raise err
+        except stripe.error.APIConnectionError as e:
+            # Network communication with Stripe failed
+            err = serializers.ValidationError('Network communication failed, try again.')
+            err.status_code = 502
+            raise err
+        except stripe.error.StripeError as e:
+            # Display a very generic error to the user, and maybe
+            # send yourself an email
+            err = serializers.ValidationError('Internal Error, contact support.')
+            err.status_code = 500
+            raise err
+        # Something else happened, completely unrelated to Stripe
+        except Exception as e:
+            err = serializers.ValidationError('Unable to process payment, try again later.')
+            err.status_code = 500
+            raise err
 
 # {
 #   "from_place": "Aalborg Airport",
@@ -68,6 +126,7 @@ class BookVehicleSerializer(serializers.ModelSerializer):
 #   "email_address": "Doe@gmail.com",
 #   "phone_number": "5434543423",
 #   "passengers": 4,
+#   "stripe_token": "okdsjisdoihsfdfhisih",
 #   "departure": "2022-09-10",
 #   "returning": "2022-10-10",
 #   "arrival_flight_number": "3243",
