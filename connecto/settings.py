@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 from decouple import config
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import dj_database_url
 import os
 
@@ -27,9 +30,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -49,6 +52,7 @@ INSTALLED_APPS = [
     'booking.apps.BookingConfig',
     'background_task',
     'anymail',
+    'cloudinary',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -144,9 +148,9 @@ JAZZMIN_SETTINGS = {
     "site_header": "Connecto",
     "site_brand": "Connecto",
     "copyright": "Connecto Transfers Ltd",
-    "site_logo": "books/img/connecto.png",
-    "site_icon": "books/img/connecto.png",
-    "login_icon": "books/img/connecto.png",
+    "site_logo": "books/img/connecto.jpg",
+    # "site_icon": "books/img/connecto.png",
+    "login_icon": "books/img/connecto.jpg",
     "welcome_sign": "Welcome to Connecto",
     "show_ui_builder": False,
 }
@@ -192,6 +196,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+#CLOUDINARY
+cloudinary.config( 
+  cloud_name = config('CLOUDINARY_CLOUD_NAME'), 
+  api_key = config('CLOUDINARY_API_KEY'), 
+  api_secret = config('CLOUDINARY_API_SECRET') 
+)
+
 # STRIPE CONFIG
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
@@ -201,15 +212,21 @@ BACKGROUND_TASK_RUN_ASYNC = True
 
 EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 
-ANYMAIL = {
-    "SENDINBLUE_API_KEY": config('SENDINBLUE_API_KEY'),
-}
+# ANYMAIL = {
+#     "SENDINBLUE_API_KEY": config('SENDINBLUE_API_KEY'),
+# }
+
+ANYMAIL_SENDINBLUE_API_KEY = config("SENDINBLUE_API_KEY")
 
 ANYMAIL = {
     "IGNORE_UNSUPPORTED_FEATURES": True,
 }
 
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+CSRF_COOKIE_SECURE = True
+
+# SESSION_COOKIE_SECURE = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -219,7 +236,7 @@ STATICFILES_DIRS = [str(BASE_DIR.joinpath('static'))]
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

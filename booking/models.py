@@ -1,7 +1,10 @@
+from cloudinary.models import CloudinaryField
 from decimal import Decimal
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
+
+# from booking.image import get_media_paths
 
 import haversine as hs
 import uuid
@@ -64,6 +67,7 @@ class Vehicle(models.Model):
     ]
 
     vehicle_make_and_model = models.CharField(max_length=255, unique=True)
+    image = CloudinaryField('image', null=True)
     category = models.CharField(max_length=55, choices=CATEGORY)
     seats = models.IntegerField(validators=[MinValueValidator(1)])
     baggage = models.IntegerField(validators=[MinValueValidator(1)])
