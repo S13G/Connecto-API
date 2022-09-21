@@ -126,8 +126,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'connecto',
         'HOST': 'localhost',
-        'USER': 's13g',
-        'PASSWORD': 's13g123#',
+        'USER': 'sieg',
+        'PASSWORD': 'sieg123#',
     }
 }
 

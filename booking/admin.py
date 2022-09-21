@@ -54,8 +54,8 @@ class BookingAdmin(admin.ModelAdmin):
     def full_name(self, obj):
         return f"{obj.pronoun} {obj.first_name} {obj.last_name}"
     
-    # def has_add_permission(self, request):
-    #     return False
+    def has_add_permission(self, request):
+        return False
 
 admin.site.register(EquipmentType)
 admin.site.register(Booking, BookingAdmin)
