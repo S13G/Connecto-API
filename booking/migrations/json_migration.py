@@ -10,7 +10,7 @@ def load_file(apps, schema_editor):
 
     Country = apps.get_model('booking', 'Country')
 
-    with open('countries.json') as json_file:
+    with open('json_dir/countries.json') as json_file:
         data = json.load(json_file)
         for p in data:
             # create YourModel object and save it to database

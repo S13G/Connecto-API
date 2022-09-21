@@ -1,7 +1,7 @@
 from background_task import background
 
-from . emails import Util
-from . models import Booking
+from booking.emails import Util
+from booking.models import Booking
 
 @background(schedule=60)
 def transport_reminder(booking_id):

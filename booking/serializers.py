@@ -51,7 +51,7 @@ class BookVehicleSerializer(serializers.ModelSerializer):
                 source=token,
                 description='Charge from Connecto',
                 statement_descriptor="22 Characters max",
-                metadata={'order_id': booking.transaction_id},
+                metadata={'transaction_id': booking.transaction_id},
                 receipt_email=booking.email_address
             )
 

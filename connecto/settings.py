@@ -193,11 +193,14 @@ STRIPE_ENDPOINT_SECRET = config('STRIPE_ENDPOINT_SECRET')
 
 BACKGROUND_TASK_RUN_ASYNC = True
 
-EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 
 ANYMAIL = {
-    "MAILJET_API_KEY": config('MAILJET_API_KEY'),
-    "MAILJET_SECRET_KEY": config('MAILJET_SECRET_KEY'),
+    "SENDINBLUE_API_KEY": config('SENDINBLUE_API_KEY'),
+}
+
+ANYMAIL = {
+    "IGNORE_UNSUPPORTED_FEATURES": True,
 }
 
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')

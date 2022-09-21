@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
 from booking.models import Booking, Country, EquipmentType, Place, Vehicle
 from booking.serializers import BookVehicleSerializer
-import stripe
 
 
 class PlaceView(APIView):   

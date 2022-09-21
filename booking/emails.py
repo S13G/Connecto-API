@@ -17,12 +17,13 @@ class Util:
     @staticmethod
     def success_booking_email(booking):
         subject = "Booking Successful"
-        message = render_to_string('blablabla.html', {
+        message = render_to_string('booking_email.html', {
             'first_name': booking.first_name,
             'last_name': booking.last_name,
             'vehicle': booking.vehicle.vehicle_make_and_model,
             'from_place': booking.from_place.name,
             'to_place': booking.to_place.name,
+            'passengers': booking.passengers,
             'date': booking.departure,
         })
 
@@ -33,7 +34,7 @@ class Util:
     @staticmethod
     def remind_booker(booking):
         subject = "Transport Reminder"
-        message = render_to_string('blablabla.html', {
+        message = render_to_string('reminder_email.html', {
             'first_name': booking.first_name,
             'last_name': booking.last_name,
             'date': booking.departure,
