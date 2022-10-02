@@ -1,8 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from booking.models import Booking, Country, EquipmentType, Place, Vehicle
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from booking.models import Booking, Country, EquipmentType, Place, PlaceReview, Vehicle, VehicleReview
 from booking.serializers import BookVehicleSerializer
+
 
 
 class PlaceView(APIView):   
@@ -10,7 +13,12 @@ class PlaceView(APIView):
       places = Place.objects.select_related('country')
       data = []
       for p in places:
-         data.append({'name': p.name, 'country':p.country.name, 'category':p.category, 'code':p.code, 'longitude':p.longitude, 'latitude':p.latitude}.copy())
+         reviews = p.place_reviews.all()
+         count = reviews.count()
+         ratings = 0
+         if count > 1:
+            ratings = (sum([r.percentage for r in reviews])) / count
+         data.append({'name': p.name, 'country':p.country.name, 'category':p.category, 'code':p.code, 'longitude':p.longitude, 'latitude':p.latitude, "ratings": ratings}.copy())
       return Response(data, status=200)
 
 class CountryView(APIView):
@@ -20,8 +28,16 @@ class CountryView(APIView):
 
 class VehicleView(APIView):
    def get(self, request):
-      vehicles = Vehicle.objects.values('vehicle_make_and_model', 'category', 'seats', 'baggage', 'tag', 'current_price', 'old_price')
-      return Response(vehicles, status=200)
+      vehicles = Vehicle.objects.all()
+      data = []
+      for v in vehicles:
+         reviews = v.vehicle_reviews.all()
+         count = reviews.count()
+         ratings = 0
+         if count > 1:
+            ratings = (sum([r.percentage for r in reviews])) / count
+         data.append({'vehicle_make_and_model': v.vehicle_make_and_model, 'category':v.category, 'seats':v.seats, 'baggage':v.baggage, 'tag':v.tag, 'current_price':v.current_price, "old_price": v.old_price, "ratings": ratings}.copy())
+      return Response(data, status=200)
 
 class EquipmentTypeView(APIView):
    def get(self, request):
@@ -31,6 +47,52 @@ class EquipmentTypeView(APIView):
 class BookVehicleView(CreateAPIView):
    serializer_class = BookVehicleSerializer
    queryset = Booking.objects.all()
+
+class PlaceReviewView(APIView):
+   def post(self, request):
+      data = request.data
+      original_keys = ['place_name', 'name', 'email', 'message', 'percentage']
+      if set(original_keys) == set(data.keys()) and not None in data.values() and not "" in data.values():
+         email = data.get('email')
+         try:
+            validate_email(email)
+         except ValidationError as e:
+            return Response('Invalid Email', status=400)
+
+         if not isinstance(data.get('percentage'), int):
+            return Response("Percentage must be an integer", status=400)
+
+         place = Place.objects.filter(name=data.get("place_name"))
+         if not place.exists():
+            return Response("Place with that name does not exist", status=400)
+         
+         PlaceReview.objects.create(place=place, name=data.get('name'), email=email, message=data.get('message'), percentage=data.get('percentage'))
+         return Response("Review sent", status=200)
+      else:
+         return Response("You didn't enter all required fields correctly", status=400)
+
+class VehicleReviewView(APIView):
+   def post(self, request):
+      data = request.data
+      original_keys = ['vehicle_make_and_model', 'name', 'email', 'message', 'percentage']
+      if set(original_keys) == set(data.keys()) and not None in data.values() and not "" in data.values():
+         email = data.get('email')
+         try:
+            validate_email(email)
+         except ValidationError as e:
+            return Response('Invalid Email', status=400)
+
+         if not isinstance(data.get('percentage'), int):
+            return Response("Percentage must be an integer", status=400)
+
+         vehicle = Vehicle.objects.filter(vehicle_make_and_model=data.get("vehicle_make_and_model"))
+         if not vehicle.exists():
+            return Response("Vehicle with that make does not exist", status=400)
+         
+         VehicleReview.objects.create(vehicle_make_and_model=data.get("vehicle_make_and_model"), name=data.get('name'), email=email, message=data.get('message'), percentage=data.get('percentage'))
+         return Response("Review sent", status=200)
+      else:
+         return Response("You didn't enter all required fields correctly", status=400)
 
 
 # {

@@ -3,15 +3,8 @@ from decimal import Decimal
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
-
-# from booking.image import get_media_paths
-
 import haversine as hs
 import uuid
-
-
-# Create your models here.
-
 
 class Country(models.Model):
     name = models.CharField(max_length=255)
@@ -33,6 +26,7 @@ class Place(models.Model):
         ('City', 'City')
     ]
     name = models.CharField(max_length=255, unique=True)
+    image = CloudinaryField('places', null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     category = models.CharField(choices=PLACES, max_length=255)
     code = models.CharField(max_length=10)
@@ -43,7 +37,25 @@ class Place(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+RATINGS_CHOICES = (
+    (20, 20),
+    (40, 40),
+    (60, 60),
+    (80, 80),
+    (100, 100)
+)
 
+class PlaceReview(models.Model):
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, related_name="place_reviews")
+    name = models.CharField(max_length=255, null=True)
+    email = models.EmailField(null=True)
+    message = models.TextField(null=True)
+    percentage = models.IntegerField(null=True, choices=RATINGS_CHOICES)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.name}---{self.place.name}"
+        
 class Vehicle(models.Model):
     TRAVEL_IN_STYLE = 'TIS'
     STYLE_AND_COMFORT = 'SAC'
@@ -81,6 +93,17 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.vehicle_make_and_model
 
+class VehicleReview(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True, related_name="vehicle_reviews")
+    name = models.CharField(max_length=255, null=True)
+    email = models.EmailField(null=True)
+    message = models.TextField(null=True)
+    percentage = models.IntegerField(null=True, choices=RATINGS_CHOICES)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.name}---{self.vehicle.vehicle_make_and_model}"
+
 class EquipmentType(models.Model):
     EQUIPMENT_CHOICE = [
         ('CHILD SEAT', 'Child Seat'),
@@ -97,7 +120,6 @@ class EquipmentType(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-
 
 class EquipmentChoice(models.Model):
     equipment = models.ForeignKey(EquipmentType, on_delete=models.CASCADE, null=True)

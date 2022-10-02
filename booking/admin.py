@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.contrib import admin
 
-from booking.models import Place, Booking, EquipmentChoice, Vehicle, EquipmentType, Country
+from booking.models import Place, Booking, EquipmentChoice, Vehicle, EquipmentType, Country, VehicleReview, PlaceReview
 
 # Register your models here.
 
@@ -59,3 +59,5 @@ class BookingAdmin(admin.ModelAdmin):
 
 admin.site.register(EquipmentType)
 admin.site.register(Booking, BookingAdmin)
+admin.site.register(VehicleReview)
+admin.site.register(PlaceReview)

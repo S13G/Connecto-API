@@ -149,7 +149,6 @@ JAZZMIN_SETTINGS = {
     "site_brand": "Connecto",
     "copyright": "Connecto Transfers Ltd",
     "site_logo": "books/img/connecto.jpg",
-    # "site_icon": "books/img/connecto.png",
     "login_icon": "books/img/connecto.jpg",
     "welcome_sign": "Welcome to Connecto",
     "show_ui_builder": False,
@@ -236,7 +235,6 @@ STATICFILES_DIRS = [str(BASE_DIR.joinpath('static'))]
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
