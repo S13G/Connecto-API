@@ -13,29 +13,29 @@ Users are able to:
 ## TECHNOLOGIES USED FOR THE BACKEND
 Connecto API is built using
 - **PYTHON**
--
-![PYTHON]()
+
+  ![PYTHON](https://github.com/S13G/Connecto-API/blob/main/assets/rsz_python.png)
 
 - **Duffel API (for airport locations)** 
--
-![DUFFEL]()
+
+  ![DUFFEL](https://github.com/S13G/Connecto-API/blob/main/assets/duffel.png)
 
 - **DJANGO**
--
-![DJANGO]()
+
+  ![DJANGO](https://github.com/S13G/Connecto-API/blob/main/assets/rsz_django.png)
 
 - **DJANGO REST FRAMEWORK**
--
-![DRF]()
+
+  ![DRF](https://github.com/S13G/Connecto-API/blob/main/assets/rsz_drf.png)
 
 - **MARIA DB (database used)**
--
-![MARIADB]()
+
+  ![MARIADB](https://github.com/S13G/Connecto-API/blob/main/assets/rsz_mariadb.png)
 
 FRONTEND
 - **REACT**
--
-![REACT]()
+
+  ![REACT](https://github.com/S13G/Connecto-API/blob/main/assets/rsz_react.png)
 
 ### Installation
 To run this project on your machine. Make sure you have __python3__ installed on your machine.
@@ -60,4 +60,4 @@ Then run the python server with the command
 Then go to the api endpoints
 
 ### Preview
-![connecto image]()
+![connecto image](https://github.com/S13G/Connecto-API/blob/main/assets/Screenshot%20from%202022-10-11%2015-53-33.png)

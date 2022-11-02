@@ -37,23 +37,31 @@ ALLOWED_HOSTS = ['127.0.0.1', 'connectotransfers.herokuapp.com']
 
 # Application definition
 
-INSTALLED_APPS = [
-    'jazzmin',
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
 
+LOCAL_APPS = [
+    'booking.apps.BookingConfig',
+]
+
+THIRD_PARTY_APPS = [
+    'jazzmin',
+    'drf_yasg',
     'rest_framework',
     'corsheaders',
     'debug_toolbar',
-    'booking.apps.BookingConfig',
     'background_task',
     'anymail',
     'cloudinary',
 ]
+
+INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS + DJANGO_APPS
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
