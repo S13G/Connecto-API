@@ -1,29 +1,38 @@
-from rest_framework import serializers
-from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Place, Vehicle
-from django.conf import settings
-from booking.emails import Util
-from . tasks import transport_reminder
 from datetime import datetime, timedelta, timezone
 
 import stripe
+from django.conf import settings
+from rest_framework import serializers
+
+from booking.emails import Util
+from booking.models import Booking, Country, EquipmentChoice, EquipmentType, Place, Vehicle
+from .tasks import transport_reminder
+
 
 class EquipmentChoiceSerializer(serializers.ModelSerializer):
-    equipment = serializers.SlugRelatedField(slug_field='name', queryset=EquipmentType.objects.all(), error_messages={'does_not_exist': 'Invalid Equipment!'})
+    equipment = serializers.SlugRelatedField(slug_field='name', queryset=EquipmentType.objects.all(),
+                                             error_messages={'does_not_exist': 'Invalid Equipment!'})
+
     class Meta:
         model = EquipmentChoice
         fields = ['quantity', 'equipment']
 
+
 class BookVehicleSerializer(serializers.ModelSerializer):
-    from_place = serializers.SlugRelatedField(slug_field='name', queryset=Place.objects.all(), error_messages={'does_not_exist': 'Place does not exist!'})
-    to_place = serializers.SlugRelatedField(slug_field='name', queryset=Place.objects.all(), error_messages={'does_not_exist': 'Place does not exist!'})
-    vehicle = serializers.SlugRelatedField(slug_field='vehicle_make_and_model', queryset=Vehicle.objects.all(), error_messages={'does_not_exist': 'Invalid Vehicle!'})
-    country = serializers.SlugRelatedField(slug_field='name', queryset=Country.objects.all(), error_messages={'does_not_exist': 'Country does not exist!'})
+    from_place = serializers.SlugRelatedField(slug_field='name', queryset=Place.objects.all(),
+                                              error_messages={'does_not_exist': 'Place does not exist!'})
+    to_place = serializers.SlugRelatedField(slug_field='name', queryset=Place.objects.all(),
+                                            error_messages={'does_not_exist': 'Place does not exist!'})
+    vehicle = serializers.SlugRelatedField(slug_field='vehicle_make_and_model', queryset=Vehicle.objects.all(),
+                                           error_messages={'does_not_exist': 'Invalid Vehicle!'})
+    country = serializers.SlugRelatedField(slug_field='name', queryset=Country.objects.all(),
+                                           error_messages={'does_not_exist': 'Country does not exist!'})
     equipment_choices = EquipmentChoiceSerializer(many=True)
 
     class Meta:
         model = Booking
         exclude = ['date_filled', 'id', 'verified']
-        read_only_fields = ('transaction_id', )
+        read_only_fields = ('transaction_id',)
 
     def get_fields(self, *args, **kwargs):
         fields = super(BookVehicleSerializer, self).get_fields(*args, **kwargs)
@@ -44,7 +53,7 @@ class BookVehicleSerializer(serializers.ModelSerializer):
             booking.equipment_choices.add(c)
         stripe.api_key = settings.STRIPE_SECRET_KEY
         try:
-            
+
             charge = stripe.Charge.create(
                 amount=booking.total_current_price,
                 currency='USD',
