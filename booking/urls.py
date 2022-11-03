@@ -1,5 +1,7 @@
 from django.urls import path
-from booking.views import BookVehicleView, CountryView, EquipmentTypeView, PlaceView, VehicleView, PlaceReviewView, VehicleReviewView
+
+from booking.views import BookVehicleView, CountryView, EquipmentTypeView, PlaceView, VehicleView, PlaceReviewView, \
+    VehicleReviewView
 
 urlpatterns = [
     path('places/', PlaceView.as_view()),
@@ -10,4 +12,3 @@ urlpatterns = [
     path('review-place/', PlaceReviewView.as_view()),
     path('review-vehicle/', VehicleReviewView.as_view())
 ]
-

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0005_alter_booking_passengers'),
     ]
@@ -14,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='booking',
             name='passengers',
-            field=models.BigIntegerField(default='1', null=True, validators=[django.core.validators.MinValueValidator(1)]),
+            field=models.BigIntegerField(default='1', null=True,
+                                         validators=[django.core.validators.MinValueValidator(1)]),
         ),
     ]

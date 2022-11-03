@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0010_payment_stripe_token_alter_payment_session_key_and_more'),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0002_remove_equipmentchoice_price_and_more'),
     ]

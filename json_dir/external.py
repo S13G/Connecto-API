@@ -1,9 +1,9 @@
-from decouple import config
-from urllib import response
-from booking.models import Place, Country
-
 import json
+
 import requests
+from decouple import config
+
+from booking.models import Place, Country
 
 url = "https://api.duffel.com/air/airports"
 api_key = config('API_KEY')

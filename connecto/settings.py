@@ -10,18 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
-from decouple import config
 
 import cloudinary
-import cloudinary.uploader
 import cloudinary.api
+import cloudinary.uploader
 import dj_database_url
-import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -33,7 +32,6 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'connectotransfers.herokuapp.com']
-
 
 # Application definition
 
@@ -55,7 +53,7 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'rest_framework',
     'corsheaders',
-    'debug_toolbar',
+    # 'debug_toolbar',
     'background_task',
     'anymail',
     'cloudinary',
@@ -86,14 +84,13 @@ CORS_ALLOW_CREDENTIALS = False
 
 CORS_ALLOW_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -101,29 +98,28 @@ MIDDLEWARE = [
     # 'booking.middleware.AuthorizedOriginMiddleware'
 ]
 
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
+# INTERNAL_IPS = [
+#     # ...
+#     "127.0.0.1",
+#     # ...
+# ]
 
 SWAGGER_SETTINGS = {
-   'SECURITY_DEFINITIONS': {
-      'Bearer': {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header'
-      }
-   }
+        }
+    }
 }
-
 
 ROOT_URLCONF = 'connecto.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,7 +133,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'connecto.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -166,6 +161,27 @@ JAZZMIN_SETTINGS = {
     "login_icon": "books/img/connecto.jpg",
     "welcome_sign": "Welcome to Connecto",
     "show_ui_builder": False,
+
+    # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
+    # for the full list of 5.13.0 free icon classes
+    "icons": {
+        "auth.user": "fas fa-users",
+        "auth.group": "fas fa-user-cog",
+        "background_task.task": "fas fa-clipboard-list",
+        "background_task.completedtask": "fas fa-check-double",
+        "booking.country": "fas fa-globe",
+        "booking.booking": "fas fa-book",
+        "booking.place": "fas fa-location-arrow",
+        "booking.vehicle": "fas fa-car",
+        "booking.placereview": "fas fa-star",
+        "booking.vehiclereview": "fas fa-star",
+        "booking.equipmenttype": "fas fa-screwdriver",
+        "booking.equipmentchoice": "fas fa-fill",
+    },
+    # Icons that are used when one is not manually specified
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
 }
 
 JAZZMIN_UI_TWEAKS = {
@@ -197,7 +213,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -209,11 +224,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-#CLOUDINARY
-cloudinary.config( 
-  cloud_name = config('CLOUDINARY_CLOUD_NAME'), 
-  api_key = config('CLOUDINARY_API_KEY'), 
-  api_secret = config('CLOUDINARY_API_SECRET') 
+# CLOUDINARY
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+    api_key=config('CLOUDINARY_API_KEY'),
+    api_secret=config('CLOUDINARY_API_SECRET')
 )
 
 # STRIPE CONFIG
@@ -248,7 +263,6 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [str(BASE_DIR.joinpath('static'))]
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

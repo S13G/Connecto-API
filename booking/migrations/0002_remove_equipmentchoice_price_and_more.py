@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0001_equipmentchoice_alter_country_options_and_more'),
     ]
@@ -29,6 +28,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='equipmenttype',
             name='name',
-            field=models.CharField(choices=[('CHILD SEAT', 'Child Seat'), ('INFANT SEAT', 'Infant Seat'), ('WHEELCHAIR', 'Wheelchair'), ('BOOSTER SEAT', 'Booster Seat'), ('EXTRA STOP IN TOWN', 'Extra Stop in Town'), ('SKIS AND SNOWBOARD', 'Ski and Snowboard'), ('BICYCLE', 'Bicycle')], max_length=255, unique=True),
+            field=models.CharField(
+                choices=[('CHILD SEAT', 'Child Seat'), ('INFANT SEAT', 'Infant Seat'), ('WHEELCHAIR', 'Wheelchair'),
+                         ('BOOSTER SEAT', 'Booster Seat'), ('EXTRA STOP IN TOWN', 'Extra Stop in Town'),
+                         ('SKIS AND SNOWBOARD', 'Ski and Snowboard'), ('BICYCLE', 'Bicycle')], max_length=255,
+                unique=True),
         ),
     ]

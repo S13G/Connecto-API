@@ -1,8 +1,8 @@
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
-from django.conf import settings
-
 import threading
+
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+
 
 class EmailThread(threading.Thread):
 
@@ -12,6 +12,7 @@ class EmailThread(threading.Thread):
 
     def run(self):
         self.email.send()
+
 
 class Util:
     @staticmethod

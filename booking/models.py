@@ -1,10 +1,12 @@
-from cloudinary.models import CloudinaryField
+import uuid
 from decimal import Decimal
+
+import haversine as hs
+from cloudinary.models import CloudinaryField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
-import haversine as hs
-import uuid
+
 
 class Country(models.Model):
     name = models.CharField(max_length=255)
@@ -37,6 +39,7 @@ class Place(models.Model):
     def __str__(self):
         return f"{self.name} ({self.code})"
 
+
 RATINGS_CHOICES = (
     (20, 20),
     (40, 40),
@@ -44,6 +47,7 @@ RATINGS_CHOICES = (
     (80, 80),
     (100, 100)
 )
+
 
 class PlaceReview(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, related_name="place_reviews")
@@ -55,7 +59,8 @@ class PlaceReview(models.Model):
 
     def __str__(self):
         return f"{self.name}---{self.place.name}"
-        
+
+
 class Vehicle(models.Model):
     TRAVEL_IN_STYLE = 'TIS'
     STYLE_AND_COMFORT = 'SAC'
@@ -93,6 +98,7 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.vehicle_make_and_model
 
+
 class VehicleReview(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True, related_name="vehicle_reviews")
     name = models.CharField(max_length=255, null=True)
@@ -103,6 +109,7 @@ class VehicleReview(models.Model):
 
     def __str__(self):
         return f"{self.name}---{self.vehicle.vehicle_make_and_model}"
+
 
 class EquipmentType(models.Model):
     EQUIPMENT_CHOICE = [
@@ -121,6 +128,7 @@ class EquipmentType(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+
 class EquipmentChoice(models.Model):
     equipment = models.ForeignKey(EquipmentType, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(validators=[MaxValueValidator(5)])
@@ -131,7 +139,7 @@ class EquipmentChoice(models.Model):
 
     @property
     def total_price(self):
-       return self.equipment.price * self.quantity
+        return self.equipment.price * self.quantity
 
 
 class Booking(models.Model):
@@ -145,7 +153,7 @@ class Booking(models.Model):
     ]
     route = models.CharField(
         max_length=255, choices=ROUTE, default='With Return')
-    
+
     # booker details
     pronoun = models.CharField(max_length=3, choices=PRONOUN, null=True)
     first_name = models.CharField(max_length=255, null=True)
@@ -153,19 +161,19 @@ class Booking(models.Model):
     email_address = models.EmailField(max_length=254, null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     phone_number = models.CharField(max_length=20, null=True)
-    #---------------------------------------------
-    
+    # ---------------------------------------------
+
     # journey details
     from_place = models.ForeignKey(
         Place, on_delete=models.CASCADE, null=True, related_name="journey_from_place")
     to_place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, null=True)
     passengers = models.IntegerField(default="1", validators=[MinValueValidator(1)], null=True)
-    #--------------------------------------
-    
+    # --------------------------------------
+
     # equipment choice
     equipment_choices = models.ManyToManyField(EquipmentChoice)
-    #-------------------------------------
+    # -------------------------------------
 
     # other details
     departure = models.DateField()
@@ -203,7 +211,7 @@ class Booking(models.Model):
         price_per_km = self.vehicle.current_price * self.passengers
         total_price = self.journey_distance * (price_per_km / 1000) + equipment_sum
         if self.route == "With Return":
-            total_price = total_price * 2 
+            total_price = total_price * 2
         return round(total_price, 2)
 
     @property
@@ -212,7 +220,7 @@ class Booking(models.Model):
         old_price_per_km = self.vehicle.old_price * self.passengers
         total_price = self.journey_distance * (old_price_per_km / 1000) + equipment_sum
         if self.route == "With Return":
-            total_price = total_price * 2 
+            total_price = total_price * 2
         return round(total_price, 2)
 
     def save(self, *args, **kwargs) -> None:
@@ -221,5 +229,5 @@ class Booking(models.Model):
             transaction_id = str(unique_code)
             similar_obj_trans_id = Booking.objects.filter(transaction_id=transaction_id)
             if not similar_obj_trans_id:
-                self.transaction_id = transaction_id                
+                self.transaction_id = transaction_id
         super().save(*args, **kwargs)

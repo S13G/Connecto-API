@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0012_remove_booking_session_key_booking_stripe_token_and_more'),
     ]

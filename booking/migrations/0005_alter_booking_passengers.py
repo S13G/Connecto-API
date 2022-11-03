@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('booking', '0004_remove_journey_from_place_remove_journey_to_place_and_more'),
     ]

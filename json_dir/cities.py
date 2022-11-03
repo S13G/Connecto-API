@@ -1,6 +1,6 @@
-from booking.models import Place, Country
-
 import json
+
+from booking.models import Place, Country
 
 with open('worldcities.json') as json_file:
     data = json.load(json_file)
@@ -10,6 +10,6 @@ with open('worldcities.json') as json_file:
         iso_country = Country.objects.get(code=p["iso2"])
         if p["iso2"] in values_list:
             Place.objects.create(name=p['city'], country=iso_country, category='City',
-                code=p['iso2'], longitude=p['lng'], latitude=p['lat']) 
+                                 code=p['iso2'], longitude=p['lng'], latitude=p['lat'])
         else:
             pass
