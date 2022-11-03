@@ -30,7 +30,8 @@ class PlaceView(APIView):
 
 class CountryView(APIView):
     @swagger_auto_schema(
-        operation_summary="List of all countries"
+        operation_summary="List of all countries",
+        operation_description="This returns a list of countries"
     )
     def get(self, request):
         countries = Country.objects.values('name', 'code')
@@ -39,7 +40,8 @@ class CountryView(APIView):
 
 class VehicleView(APIView):
     @swagger_auto_schema(
-        operation_summary="List of all vehicles with additional info e.g price etc."
+        operation_summary="List of all vehicles.",
+        operation_description="This returns a list of vehicles along with their additional infos like prices, seats etc."
     )
     def get(self, request):
         vehicles = Vehicle.objects.all()
@@ -58,7 +60,9 @@ class VehicleView(APIView):
 
 class EquipmentTypeView(APIView):
     @swagger_auto_schema(
-        operation_summary="List of equipment types to be selected from(will be chosen in the equipment choice section)"
+        operation_summary="List of equipment types to be selected from(will be chosen in the equipment choice section)",
+        operation_description="This returns a list of equipment types customers can choose from in the equipment "
+                              "choice section. "
     )
     def get(self, request):
         types = EquipmentType.objects.values('name', 'price')
@@ -72,7 +76,8 @@ class BookVehicleView(CreateAPIView):
 
 class PlaceReviewView(APIView):
     @swagger_auto_schema(
-        operation_summary="Adding a review to a place service"
+        operation_summary="Adding a review to a place service",
+        operation_description="Create a review for a specific place."
     )
     def post(self, request):
         data = request.data
@@ -100,7 +105,8 @@ class PlaceReviewView(APIView):
 
 class VehicleReviewView(APIView):
     @swagger_auto_schema(
-        operation_summary="Adding a review to a vehicle(also using star ratings)"
+        operation_summary="Adding a review to a vehicle(also using star ratings)",
+        operation_description="Creates a review for a specific vehicle after service."
     )
     def post(self, request):
         data = request.data
