@@ -11,7 +11,8 @@ from booking.serializers import BookVehicleSerializer
 
 class PlaceView(APIView):
     @swagger_auto_schema(
-        operation_summary="List of all places(City, Airports etc.)"
+        operation_summary="List of all places(City, Airports etc.)",
+        operation_description="This returns a list of all places"
     )
     def get(self, request):
         places = Place.objects.select_related('country')
