@@ -63,10 +63,12 @@ INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS + DJANGO_APPS
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'https://connectotransfers.herokuapp.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
+    'https://connectotransfers.herokuapp.com'
 ]
 
 CORS_ALLOW_HEADERS = (
