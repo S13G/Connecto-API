@@ -29,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'connectotransfers.herokuapp.com']
+ALLOWED_HOSTS = ['connecto.cleverapps.io', '127.0.0.1']
 
 # Application definition
 
@@ -64,13 +64,15 @@ INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS + DJANGO_APPS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8000',
-    'https://connectotransfers.herokuapp.com'
+    'http://localhost:5173',
+    'http://localhost:1111',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8000',
-    'https://connectotransfers.herokuapp.com'
+    'http://localhost:5173',
+    'http://localhost:1111',
 ]
 
 CORS_ALLOW_HEADERS = (
@@ -90,7 +92,6 @@ CORS_ALLOW_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,7 +100,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'booking.middleware.AuthorizedOriginMiddleware'
+    # 'booking.middleware.AuthorizedOriginMiddleware'
 ]
 
 # INTERNAL_IPS = [
@@ -141,18 +142,29 @@ WSGI_APPLICATION = 'connecto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': config('DATABASE_DBNAME'),
+#         'HOST': 'localhost',
+#         'USER': config('DATABASE_USER'),
+#         'PASSWORD': config('DATABASE_PASS'),
+#     }
+# }
+
+# Online DB
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DATABASE_DBNAME'),
-        'HOST': 'localhost',
-        'USER': config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASS'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config("POSTGRESQL_ADDON_DB"),
+        'USER': config("POSTGRESQL_ADDON_USER"),
+        'PASSWORD': config("POSTGRESQL_ADDON_PASSWORD"),
+        'HOST': config("POSTGRESQL_ADDON_HOST"),
+        'PORT': config("POSTGRESQL_ADDON_PORT"),
+        'CONN_MAX_AGE': 500,
     }
 }
-
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
 
 SILENCED_SYSTEM_CHECKS = ['mysql.E001']
 
@@ -264,9 +276,17 @@ CSRF_COOKIE_SECURE = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
 STATICFILES_DIRS = [str(BASE_DIR.joinpath('static'))]
+
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
+
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# For deployment
+STATIC_URL_PREFIX = config("STATIC_URL_PREFIX")
+
+STATIC_FILES_PATH = config("STATIC_FILES_PATH")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
