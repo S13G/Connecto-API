@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['connecto.cleverapps.io', '127.0.0.1', '10.2.194.209']
 
@@ -142,29 +142,29 @@ WSGI_APPLICATION = 'connecto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 #
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DATABASE_DBNAME'),
-        'HOST': 'localhost',
-        'USER': config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASS'),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': config('DATABASE_DBNAME'),
+#         'HOST': 'localhost',
+#         'USER': config('DATABASE_USER'),
+#         'PASSWORD': config('DATABASE_PASS'),
+#     }
+# }
 
 # Online DB
 #
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config("POSTGRESQL_ADDON_DB"),
-#         'USER': config("POSTGRESQL_ADDON_USER"),
-#         'PASSWORD': config("POSTGRESQL_ADDON_PASSWORD"),
-#         'HOST': config("POSTGRESQL_ADDON_HOST"),
-#         'PORT': config("POSTGRESQL_ADDON_PORT"),
-#         'CONN_MAX_AGE': 500,
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config("POSTGRESQL_ADDON_DB"),
+        'USER': config("POSTGRESQL_ADDON_USER"),
+        'PASSWORD': config("POSTGRESQL_ADDON_PASSWORD"),
+        'HOST': config("POSTGRESQL_ADDON_HOST"),
+        'PORT': config("POSTGRESQL_ADDON_PORT"),
+        'CONN_MAX_AGE': 500,
+    }
+}
 
 SILENCED_SYSTEM_CHECKS = ['mysql.E001']
 
